@@ -1,0 +1,47 @@
+- name: Installation
+  hosts: tomcat
+  become: yes
+  become_method: sudo
+  
+  pre_tasks:
+   - debug: msg="Let's install Nginx, Tomcat"
+
+  roles:
+   - tomcat
+   - nginx
+   
+  
+
+- name: Verification local
+  hosts: tomcat
+  become: yes
+  become_method: sudo
+
+  pre_tasks:
+   - debug: msg="Let's test Java, Tomcat, Nginx"
+
+  roles:
+   - java_test
+   - tomcat_test
+   - nginx_test
+   
+- name: Verification remote
+  hosts: localhost
+  
+  pre_tasks:
+   - debug: msg="Let's test Java, Tomcat, Nginx from localhost"
+  
+  tasks:
+
+    - name: Check response from Tomcat service
+      uri:
+         url: http://192.168.56.10:80
+         return_content: yes
+      register: webpage
+
+    - name: Fail if Tomcat is not in the page content
+      assert:
+       that:
+         - "'Tomcat' in webpage.content"
+       msg: 'Fail Tomcat is not in the page content'
+     
